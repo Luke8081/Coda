@@ -1,0 +1,178 @@
+
+<head>
+    <title>Scan report</title>
+    <link rel="stylesheet" type="text/css" href="styles/home.css"/>
+</head>
+<%- include ('./partials/nav'); %>
+
+<style>
+    .container{
+        background-color: #2e3683;
+        color: white;
+        margin-top: 12%;
+        margin-left: 20%;
+        margin-right: 20%;
+        padding: 2%;
+        padding-top: 0;
+        font-size: min(3vw, 30px);
+        line-height: 1.8;
+        border-radius: 20px;
+    }
+
+    .container h2{
+        text-align: center;
+    }
+
+    body{
+        background-color: #5f5f61;
+    }
+    .view-button{
+        background-color: #2196F3;
+        width: 50%;
+        height: 40%;
+        text-decoration: none;
+        border: none;
+        color: white;
+        font-size: 18px;
+        box-shadow: 0 3px #999;
+        border-radius: 10px;
+        margin: 10%;
+        }
+
+    .view-button:hover{
+        cursor: pointer;
+        filter: brightness(110%);
+        }
+
+    .view-button:active {
+        box-shadow: 0 5px #666;
+        transform: translateY(4px);
+        }
+
+    table, th, td {
+        border-collapse: collapse;
+        text-align: center;
+        color: white;
+        font-size: 18px;
+        height: 20%;
+        
+        }
+    
+    .view-history-report-button{
+        display: block;
+        background-color: #2196F3;
+        width: 40%;
+        height: 50%;
+        text-decoration: none;
+        border: none;
+        color: white;
+        font-size: 18px;
+        box-shadow: 0 3px #999;
+        border-radius: 10px;
+        margin: 3%;
+        }
+    
+    td{
+        border-top: 1.5px solid rgb(248, 246, 246);
+        margin-top: 3%;
+        margin-bottom: 3%;
+    }
+    
+    .history-row{
+        height: 25%;
+        
+    }
+
+    .history-row button{
+        margin: 0;
+        padding: 20%;
+    }
+    
+    .back-button{
+        background-color: #2195f38a;
+        width: 10%;
+        height: 3%;
+        text-decoration: none;
+        border: none;
+        color: white;
+        font-size: 18px;
+        box-shadow: 0 3px #999;
+        border-radius: 10px;
+        margin-top: 1%;
+    }
+
+    .back-button:hover{
+        cursor: pointer;
+        filter: brightness(110%);
+        }
+
+    .-button:active {
+        box-shadow: 0 5px #666;
+        transform: translateY(4px);
+        }
+    
+</style>
+
+<div class="container">
+    <div class="title">
+        <button onclick="create_main_table()" id="back-button" class="back-button">Back</button>
+        <h2 id="title"></h2>
+    </div>
+    
+    <table style="width: 100%;" id="address_list"></table>
+</div>
+
+
+<script>
+    //Create view report button which links to the report from scan
+    function create_main_table(){
+        address_list = addresses.split(",")
+        const address_list_id = document.getElementById('address_list')
+        document.getElementById("back-button").style.visibility = 'hidden'
+        document.getElementById('title').innerHTML = "Scanned Addresses"
+        address_list_id.innerHTML = "<tr><th>Addresses</th><th>Recent scan</th><th>Scan history</th></tr>"
+        for(let i =0; i < address_list.length; i++){
+            let history_button = '<button class="view-button" id="history_button" type="button">View</button>'
+            let view_button = '<tr><td>' + address_list[i] + '</td><td><a href=/address_report?address='+ address_list[i]+ '><button class="view-button" type="button">View</button><td>'+history_button+'</a></td></tr>'
+            
+            address_list_id.innerHTML += view_button
+
+            //Add event listener to history button 
+            var history_button_ID = document.getElementById('history_button')
+            history_button_ID.addEventListener('click', function(){
+                view_history(address_list[i])
+            })
+        }
+    }
+
+    function create_history_table(date_list, address){
+        document.getElementById('title').innerHTML = address
+        document.getElementById("back-button").style.visibility = 'visible'
+        const address_list = document.getElementById('address_list')
+        address_list.innerHTML = '<tr><th>Date</th></tr>'
+        for(let i =0; i < date_list.length; i++){
+            let view_button = '<tr class="history-row"><td>'+date_list[i]+'</td><td><a href=/address_report_history?address='+address +'&date='+date_list[i]+' <button class="view-history-report-button" type="button">View</button></td></tr>'
+            address_list.innerHTML += view_button
+        }
+    }
+
+    function view_history(address){
+        console.log(address)
+        const xhr = new XMLHttpRequest();
+        let url = "/address_report_history?address="+address
+        xhr.open("GET", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                let response = JSON.parse(xhr.responseText)
+                create_history_table(response, address)
+            };
+        }
+        xhr.send()
+    }
+
+    var addresses = "<%= addresses %>"
+
+    create_main_table()
+
+</script>
