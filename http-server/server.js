@@ -210,6 +210,12 @@ app.post('/edit_addresses', function(req, res){
         res.sendStatus(500)
     }
 })
+app.get('/scan_log', function(req, res){
+    check_DIR()
+    let data = fs.readFileSync(process.cwd()+'/scan_log.txt');
+    console_text += data
+    res.send(data)
+})
 
 app.listen(8085, '127.0.0.1')
 

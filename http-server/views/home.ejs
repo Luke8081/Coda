@@ -10,7 +10,7 @@ img {
    margin: 10%;
    padding: 1%;
    width: 70%;
-   height: 50%;
+   height: 40%;
    color: whitesmoke;
    border-radius: 15px;
    vertical-align: top;
@@ -275,12 +275,28 @@ input:checked + .slider:before {
 }
 
 .output-text-class{
+   position: relative;
     overflow-y: scroll;
     height: 450px;
     width: 100%;
     resize: none;
     margin-bottom: -5%;
     margin-top: 0.5%;
+}
+
+.view_scan_button{
+   background-color: #2196F3;
+   width: 20%;
+   height: 5%;
+   margin-top: 7%;
+   margin-bottom: 1%;
+   padding: 0.7%;
+   text-decoration: none;
+   border: none;
+   color: white;
+   font-size: 15px;
+   box-shadow: 0 3px #999;
+   border-radius: 10px;
 }
 
 .refresh_button{
@@ -305,6 +321,16 @@ input:checked + .slider:before {
 }
 
 .refresh_button:active {
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
+}
+
+.view_scan_button:hover{
+   cursor: pointer;
+   filter: brightness(110%);
+}
+
+.view_scan_button:active {
   box-shadow: 0 5px #666;
   transform: translateY(4px);
 }
@@ -344,6 +370,30 @@ input:checked + .slider:before {
    margin-top: 6%;
 }
 
+.scroll_down_image{
+   position: absolute;
+   top: 66%;
+   left: 45%;
+   transition: opacity 0.5s ease;
+   animation: mover 5s infinite  alternate-reverse;
+}
+
+.scroll_down_image:hover{
+   cursor: pointer;
+   -webkit-animation: mover 1s infinite  alternate;
+   animation: mover 1s infinite  alternate;
+}
+
+@-webkit-keyframes mover {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(25%); }
+}
+
+@keyframes mover {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(25%); }
+}
+
 
 </style>
 <html>
@@ -366,7 +416,10 @@ input:checked + .slider:before {
             </nav>
             <div class="output-msg-container"><p id="output-msg">Output</p></div>
             <textarea id='output-text' class='output-text-class'></textarea>
+            <img onclick="scroll_textArea_down()" class="scroll_down_image" id="scroll_down_image" src="/images/arrows-down.png" height="60" width="60">
             <button id="refresh_button" class="refresh_button" onclick="button_click()">Clear</button>
+            <button id="view_scan_button" class="view_scan_button" onclick="scan_log_click()">View log</button>
+            
          </div>
       </div>
 
@@ -645,6 +698,29 @@ input:checked + .slider:before {
       xhr.send(JSON.stringify({addresses: data}))
    }
 
+   function scroll_textArea_down(){
+      const textarea = document.getElementById('output-text')
+      textarea.scrollBy({ 
+         top: textarea.scrollHeight,
+         left: 0, 
+         behavior: 'smooth' 
+      });
+   }
+
+
+
+   function scan_log_click(){
+      const xhr = new XMLHttpRequest();
+      const textarea = document.getElementById('output-text')
+      xhr.open("GET", '/scan_log', true);
+         xhr.setRequestHeader("Content-Type", "application/json");
+         xhr.onreadystatechange = function () {
+            textarea.value += xhr.responseText
+            scroll_textArea_down()
+         }
+      xhr.send()
+   }
+
    setInterval(function(){
       if (view == 'console'){
          update_console()
@@ -661,11 +737,25 @@ input:checked + .slider:before {
    setInterval(function(){
       get_checked_settings()
    },30000)
-
+   
+   
    console_click()
    document.getElementById("output-msg").style.visibility = 'hidden'
 
-   
+   const scroll_img = document.getElementById("scroll_down_image")
+   scroll_img.style.opacity = 0
+
+   //Make scroll button appear and dissapear based on users scroll on the page
+   document.getElementById('output-text').addEventListener('scroll', event => {
+    const {scrollHeight, scrollTop, clientHeight} = event.target;
+
+    if (Math.abs(scrollHeight - clientHeight - scrollTop) > 1) {
+      scroll_img.style.opacity = 100
+    }
+    if (Math.abs(scrollHeight - clientHeight - scrollTop) < 1) {
+      scroll_img.style.opacity = 0
+    }
+   });
    
 </script>
 
